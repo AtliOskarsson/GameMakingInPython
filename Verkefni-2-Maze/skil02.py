@@ -31,14 +31,18 @@ class Player(object):
             if self.rect.colliderect(wall.rect):
                 if dx > 0:  # Moving right; Hit the left side of the wall
                     self.rect.right = wall.rect.left
+                    print("Left")
                 if dx < 0:  # Moving left; Hit the right side of the wall
                     self.rect.left = wall.rect.right
+                    print("Right")
                 if dy > 0:  # Moving down; Hit the top side of the wall
                     self.rect.bottom = wall.rect.top
+                    print("Top")
                 if dy < 0:  # Moving up; Hit the bottom side of the wall
                     self.rect.top = wall.rect.bottom
+                    print("Bottom")
 
-        for bomb in bomblocation:
+        for bomb in bombs:
             if self.rect.colliderect(bomb.rect):
                 if dx > 0:  # Moving right; Hit the left side of the wall
                     self.rect.right = bomb.rect.left
@@ -84,55 +88,54 @@ clock = pygame.time.Clock()
 walls = []  # List to hold the walls
 bombs = []  # List to hold the bombs
 antibombs = []
-bomblocation = []
 player = Player()  # Create the player
 
 # Holds the level layout in a list of strings.
 level = [
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-    "W                                                          W",
-    "W WWWW    WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW   WWWWWWWWWWWW W",
-    "W                                                          W",
+    "W W       W                                   WW           W",
+    "W WWW W W WWWWWWWWWWW WWWWWWWWWWWWWWWWWWWWWWW WW WWWWWWWWW W",
+    "W     W W           W W                          W         W",
+    "W WWWWW WWWWWW WWWWWW W WWWWWWWWWWWWWWWWWWWWWWWWWW WWWWW WWW",
+    "W W       W           W W                        W   W   W W",
+    "W WWWWWWWWW WWWWWW WWWW W WWWWWWWWWWWWWWWWWWWWWWWWWWWW W W W",
+    "W W       W W    W W  W   W        W        W   W   W  W   W",
+    "W W WWWWWWW W WW W W WWWWWW WWWWWWWW WWWWWW W W W W W WWWW W",
+    "W W         W WW W W W      W        W        W   W W    W W",
+    "W WWW WWWWWWW W  W W W WWW  W WWWW WWW WWWWWWWWWWWW WWWW W W",
+    "W W   W       WWWW W W W WWWW WW   W    W W   W   W    W W W",
+    "W W WWW WWWWWWW    W W W       W WWW WWWW W W W W W WWWW W W",
+    "W W W   W       WWWW W W WWWWW W W   W      W W W   W    W W",
+    "W W B WWW WWWWWWW      W     W W WWWWWWWWWWWW W WWWWW WWWW W",
+    "W W W  W  W       WWWWWWWWWW W W              W     W    W W",
+    "W W WW W  W WWWWWWW          W W WWWWWWWWWWWWWWWWWWWWWWW WWW",
+    "W         W W     W WWWWWWWWWW W W   W   W   W   W   W   W W",
+    "W WWWWW WWW W WWWWW W          W   W   W   W   W   W   W   W",
+    "W W     W W W W   W W WWWW WWWWWWWWWWWWWWW WWWWWWWWWWWWWWWWW",
+    "W W WWWWW   W W W W W W                  W W               W",
+    "W W W     WWW W WWWWW W                  W   WWWWWWWWWWWWW W",
+    "W   W WWWWW   W       W                  WWWWW           W W",
+    "W W W WW     WWWWW WWWW                        WWWWWWWWW W W",
+    "W W      WWW W                                             W",
+    "W WWWWWWWW W WWWWWWWW                                      W",
+    "W W          W                                             W",
+    "W     WWWWWWWW                                             W",
     "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                  B                                     W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                 B                      W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W A                                                        W",
-    "W W                                                        W",
-    "W W                     B                                  W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W W                                                        W",
-    "W                                                          E",
+    "W   W                                                      W",
+    "W W W                               B                      W",
+    "W W W                                                      W",
+    "W W W                                                      W",
+    "W W W                                                      W",
+    "W W W                                                      W",
+    "W W W                                                      W",
+    "W W WWWWW               B                                  W",
+    "W W     W                                                  W",
+    "W WWWWW W                                                  W",
+    "W W   W W                                                  W",
+    "W W W W W                                                  W",
+    "W W W W W                                                  W",
+    "W WWW W WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
+    "W     W                                                    E",
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 
 ]
@@ -147,14 +150,12 @@ for row in level:
             endakubbur = pygame.Rect(x, y, 16, 16)
         if col == "B":
             Bomb((x, y))
-            bomblocation.append(pygame.Rect(x, y, 16, 16))
         if col == "A":
             AntiBomb((x, y))
         x += 16
     y += 16
     x = 0
 
-print(bomblocation)
 running = True
 while running:
 
