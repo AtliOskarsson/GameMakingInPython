@@ -11,6 +11,9 @@ class Player(object):
 
     def __init__(self):
         self.rect = pygame.Rect(16, 16, 16, 16)
+        global antibomberinos
+        self.antibomberinos = 0
+        self.defusedBombs = 0
 
     def move(self, dx, dy):
 
@@ -20,11 +23,19 @@ class Player(object):
         if dy != 0:
             self.move_single_axis(0, dy)
 
+    def draw(self):
+        if self.antibomberinos >= 1:
+            man = pygame.draw.rect(screen, (255, 200, 0), player.rect)
+        else:
+            man = pygame.draw.rect(screen, (255, 128, 0), player.rect)
+        return man
+
     def move_single_axis(self, dx, dy):
 
         # Move the rect
         self.rect.x += dx
         self.rect.y += dy
+
 
         # If you collide with a wall, move out based on velocity
         for wall in walls:
@@ -44,6 +55,29 @@ class Player(object):
 
         for bomb in bombs:
             if self.rect.colliderect(bomb.rect):
+                if self.antibomberinos >= 1:
+                    if dx > 0:  # Moving right; Hit the left side of the wall
+                        self.rect.right = bomb.rect.left
+                        bombs.remove(bomb)
+                        self.defusedBombs -= 1
+                        self.antibomberinos -= 1
+                    if dx < 0:  # Moving left; Hit the right side of the wall
+                        self.rect.left = bomb.rect.right
+                        bombs.remove(bomb)
+                        self.defusedBombs += 1
+                        self.antibomberinos -= 1
+                    if dy > 0:  # Moving down; Hit the top side of the wall
+                        self.rect.bottom = bomb.rect.top
+                        bombs.remove(bomb)
+                        self.defusedBombs += 1
+                        self.antibomberinos -= 1
+                    if dy < 0:  # Moving up; Hit the bottom side of the wall
+                        self.rect.top = bomb.rect.bottom
+                        bombs.remove(bomb)
+                        self.defusedBombs += 1
+                        self.antibomberinos -= 1
+                else:
+                    raise SystemExit("You hit something")
                 if dx > 0:  # Moving right; Hit the left side of the wall
                     self.rect.right = bomb.rect.left
                 if dx < 0:  # Moving left; Hit the right side of the wall
@@ -52,6 +86,21 @@ class Player(object):
                     self.rect.bottom = bomb.rect.top
                 if dy < 0:  # Moving up; Hit the bottom side of the wall
                     self.rect.top = bomb.rect.bottom
+        for antibomb in antibombs:
+            if self.rect.colliderect(antibomb.rect):
+                if dx > 0:  # Moving right; Hit the left side of the wall
+                    self.antibomberinos+=1
+                    antibombs.remove(antibomb)
+                if dx < 0:  # Moving left; Hit the right side of the wall
+                    self.antibomberinos+=1
+                    antibombs.remove(antibomb)
+                if dy > 0:  # Moving down; Hit the top side of the wall
+                    self.antibomberinos+=1
+                    antibombs.remove(antibomb)
+                if dy < 0:  # Moving up; Hit the bottom side of the wall
+                    self.antibomberinos+=1
+                    antibombs.remove(antibomb)
+
 
 
 # Nice class to hold a wall rect
@@ -106,23 +155,23 @@ level = [
     "W W   W       WWWW W W W WWWW WW   W    W W   W   W    W W W",
     "W W WWW WWWWWWW    W W W       W WWW WWWW W W W W W WWWW W W",
     "W W W   W       WWWW W W WWWWW W W   W      W W W   W    W W",
-    "W W B WWW WWWWWWW      W     W W WWWWWWWWWWWW W WWWWW WWWW W",
+    "W A B WWW WWWWWWW      W     W W WWWWWWWWWWWW W WWWWW WWWW W",
     "W W W  W  W       WWWWWWWWWW W W              W     W    W W",
-    "W W WW W  W WWWWWWW          W W WWWWWWWWWWWWWWWWWWWWWWW WWW",
-    "W         W W     W WWWWWWWWWW W W   W   W   W   W   W   W W",
-    "W WWWWW WWW W WWWWW W          W   W   W   W   W   W   W   W",
-    "W W     W W W W   W W WWWW WWWWWWWWWWWWWWW WWWWWWWWWWWWWWWWW",
-    "W W WWWWW   W W W W W W                  W W               W",
-    "W W W     WWW W WWWWW W                  W   WWWWWWWWWWWWW W",
-    "W   W WWWWW   W       W                  WWWWW           W W",
-    "W W W WW     WWWWW WWWW                        WWWWWWWWW W W",
-    "W W      WWW W                                             W",
-    "W WWWWWWWW W WWWWWWWW                                      W",
-    "W W          W                                             W",
-    "W     WWWWWWWW                                             W",
-    "W W                                                        W",
-    "W   W                                                      W",
-    "W W W                               B                      W",
+    "W W WW W WW WWWWWWW          W W WWWWWWWWWWWWWWWWWWWWWWW WWW",
+    "W        WW W     W WWWWWWWWWW W W   W   W   W   W   W   W W",
+    "W WWWWW WW  W WWWWW W          W   W   W   W   W   W   W   W",
+    "W W     WW WW W   W W WWWW WWWWWWWWWWWWWWW WWWWWWWWWWWWWWWWW",
+    "W W WWWWW  W  W W W W W  W W             W W               W",
+    "W W W     WW WW WWWWW WW W WWWWWWWWWWWWW W W WWWWWWWWWWWW  W",
+    "W   W WWWWW  W           W               W   W          W  W",
+    "W W W WW     W WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW W  W",
+    "W W      WWW W                              W         W W  W",
+    "W WWWWWWWW W WWWWWWWW                       W WWWWWWWWW W  W",
+    "W W          W                              W W       W W  W",
+    "W     WWWWWWWW                              W W WWWWW W W  W",
+    "W W                                           W W W W W W  W",
+    "W   W                                       WWW W W W      W",
+    "W W W                               B       WWWWWWWWWWWWWWWW",
     "W W W                                                      W",
     "W W W                                                      W",
     "W W W                                                      W",
@@ -192,5 +241,11 @@ while running:
         pygame.draw.rect(screen, (50,150,120), antibomb.rect)
 
     pygame.draw.rect(screen, (0, 255, 255), endakubbur)
-    pygame.draw.rect(screen, (255, 200, 0), player.rect)
+    counter = 0
+    if counter %2 == 0:
+        pygame.draw.rect(screen, (255, 200, 0), player.rect)
+        counter += 1
+    else:
+        pygame.draw.rect(screen, (255, 128, 0), player.rect)
+        counter += 1
     pygame.display.flip()
