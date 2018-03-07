@@ -11,8 +11,7 @@ class Player(object):
 
     def __init__(self):
         self.rect = pygame.Rect(16, 16, 16, 16)
-        global antibomberinos
-        self.antibomberinos = 0
+        self.antibombcount = 0
         self.defusedBombs = 0
 
     def move(self, dx, dy):
@@ -23,11 +22,14 @@ class Player(object):
         if dy != 0:
             self.move_single_axis(0, dy)
 
+    def anti(self):
+        return self.antibombcount
+
     def draw(self):
-        if self.antibomberinos >= 1:
-            man = pygame.draw.rect(screen, (255, 200, 0), player.rect)
+        if self.antibombcount >= 1:
+            man = (255, 200, 0)
         else:
-            man = pygame.draw.rect(screen, (255, 128, 0), player.rect)
+            man = (255, 128, 0)
         return man
 
     def move_single_axis(self, dx, dy):
@@ -42,42 +44,45 @@ class Player(object):
             if self.rect.colliderect(wall.rect):
                 if dx > 0:  # Moving right; Hit the left side of the wall
                     self.rect.right = wall.rect.left
-                    print("Left")
+                   # print("Left")
                 if dx < 0:  # Moving left; Hit the right side of the wall
                     self.rect.left = wall.rect.right
-                    print("Right")
+                   # print("Right")
                 if dy > 0:  # Moving down; Hit the top side of the wall
                     self.rect.bottom = wall.rect.top
-                    print("Top")
+                   # print("Top")
                 if dy < 0:  # Moving up; Hit the bottom side of the wall
                     self.rect.top = wall.rect.bottom
-                    print("Bottom")
+                   # print("Bottom")
 
         for bomb in bombs:
             if self.rect.colliderect(bomb.rect):
-                if self.antibomberinos >= 1:
+                if self.antibombcount >= 1:
+                    print(self.antibombcount)
                     if dx > 0:  # Moving right; Hit the left side of the wall
                         self.rect.right = bomb.rect.left
                         bombs.remove(bomb)
                         self.defusedBombs -= 1
-                        self.antibomberinos -= 1
+                        self.antibombcount -= 1
                     if dx < 0:  # Moving left; Hit the right side of the wall
                         self.rect.left = bomb.rect.right
                         bombs.remove(bomb)
                         self.defusedBombs += 1
-                        self.antibomberinos -= 1
+                        self.antibombcount -= 1
                     if dy > 0:  # Moving down; Hit the top side of the wall
                         self.rect.bottom = bomb.rect.top
                         bombs.remove(bomb)
                         self.defusedBombs += 1
-                        self.antibomberinos -= 1
+                        self.antibombcount -= 1
                     if dy < 0:  # Moving up; Hit the bottom side of the wall
                         self.rect.top = bomb.rect.bottom
                         bombs.remove(bomb)
                         self.defusedBombs += 1
-                        self.antibomberinos -= 1
+                        self.antibombcount -= 1
                 else:
+                    print(bomb)
                     raise SystemExit("You hit something")
+
                 if dx > 0:  # Moving right; Hit the left side of the wall
                     self.rect.right = bomb.rect.left
                 if dx < 0:  # Moving left; Hit the right side of the wall
@@ -86,19 +91,20 @@ class Player(object):
                     self.rect.bottom = bomb.rect.top
                 if dy < 0:  # Moving up; Hit the bottom side of the wall
                     self.rect.top = bomb.rect.bottom
+
         for antibomb in antibombs:
             if self.rect.colliderect(antibomb.rect):
                 if dx > 0:  # Moving right; Hit the left side of the wall
-                    self.antibomberinos+=1
+                    self.antibombcount+=1
                     antibombs.remove(antibomb)
                 if dx < 0:  # Moving left; Hit the right side of the wall
-                    self.antibomberinos+=1
+                    self.antibombcount+=1
                     antibombs.remove(antibomb)
                 if dy > 0:  # Moving down; Hit the top side of the wall
-                    self.antibomberinos+=1
+                    self.antibombcount+=1
                     antibombs.remove(antibomb)
                 if dy < 0:  # Moving up; Hit the bottom side of the wall
-                    self.antibomberinos+=1
+                    self.antibombcount+=1
                     antibombs.remove(antibomb)
 
 
@@ -122,6 +128,13 @@ class AntiBomb(object):
         antibombs.append(self)
         self.rect = pygame.Rect(pos[0], pos[1], 16, 16)
 
+class Entrance(object):
+
+    def __init__(self, pos):
+        entranceExit.append(self)
+        self.rect = pygame.Rect(pos[0], pos[1], 16, 16)
+
+
 
 
 
@@ -137,15 +150,19 @@ clock = pygame.time.Clock()
 walls = []  # List to hold the walls
 bombs = []  # List to hold the bombs
 antibombs = []
+entranceExit = []
 player = Player()  # Create the player
+
+counter = 0
+count = 0
 
 # Holds the level layout in a list of strings.
 level = [
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-    "W W       W                                   WW           W",
+    "W WA      W                                   WW           W",
     "W WWW W W WWWWWWWWWWW WWWWWWWWWWWWWWWWWWWWWWW WW WWWWWWWWW W",
-    "W     W W           W W                          W         W",
-    "W WWWWW WWWWWW WWWWWW W WWWWWWWWWWWWWWWWWWWWWWWWWW WWWWW WWW",
+    "WA    W W           W W                          W         W",
+    "WBWWWWW WWWWWW WWWWWW W WWWWWWWWWWWWWWWWWWWWWWWWWW WWWWW WWW",
     "W W       W           W W                        W   W   W W",
     "W WWWWWWWWW WWWWWW WWWW W WWWWWWWWWWWWWWWWWWWWWWWWWWWW W W W",
     "W W       W W    W W  W   W        W        W   W   W  W   W",
@@ -155,7 +172,7 @@ level = [
     "W W   W       WWWW W W W WWWW WW   W    W W   W   W    W W W",
     "W W WWW WWWWWWW    W W W       W WWW WWWW W W W W W WWWW W W",
     "W W W   W       WWWW W W WWWWW W W   W      W W W   W    W W",
-    "W A B WWW WWWWWWW      W     W W WWWWWWWWWWWW W WWWWW WWWW W",
+    "W W W WWW WWWWWWW      W     W W WWWWWWWWWWWW W WWWWW WWWW W",
     "W W W  W  W       WWWWWWWWWW W W              W     W    W W",
     "W W WW W WW WWWWWWW          W W WWWWWWWWWWWWWWWWWWWWWWW WWW",
     "W        WW W     W WWWWWWWWWW W W   W   W   W   W   W   W W",
@@ -174,7 +191,7 @@ level = [
     "W W W                               B       WWWWWWWWWWWWWWWW",
     "W W W                                                      W",
     "W W W                                                      W",
-    "W W W                                                      W",
+    "W W W              X                                       W",
     "W W W                                                      W",
     "W W W                                                      W",
     "W W WWWWW               B                                  W",
@@ -183,8 +200,8 @@ level = [
     "W W   W W                                                  W",
     "W W W W W                                                  W",
     "W W W W W                                                  W",
-    "W WWW W WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
-    "W     W                                                    E",
+    "W WWW W WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWXW",
+    "W     W                                                  X E",
     "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW",
 
 ]
@@ -201,14 +218,16 @@ for row in level:
             Bomb((x, y))
         if col == "A":
             AntiBomb((x, y))
+        if col == "X":
+            Entrance((x, y))
         x += 16
     y += 16
     x = 0
 
 running = True
 while running:
-
     clock.tick(60)
+
 
     for e in pygame.event.get():
         if e.type == pygame.QUIT:
@@ -239,13 +258,22 @@ while running:
         pygame.draw.rect(screen, (255,0,255), bomb.rect)
     for antibomb in antibombs:
         pygame.draw.rect(screen, (50,150,120), antibomb.rect)
+    for exit in entranceExit:
+        pygame.draw.rect(screen, (248, 64, 12), exit.rect)
 
     pygame.draw.rect(screen, (0, 255, 255), endakubbur)
-    counter = 0
-    if counter %2 == 0:
-        pygame.draw.rect(screen, (255, 200, 0), player.rect)
-        counter += 1
+
+    # Takes from antibombcounts in the class Player
+    if player.antibombcount >= 1:
+        man = (255, 200, 0)
     else:
-        pygame.draw.rect(screen, (255, 128, 0), player.rect)
-        counter += 1
+        man = (255, 128, 0)
+
+    pygame.draw.rect(screen, man, player.rect)
+    # counter
+    counter += 1
+    if counter % 60 == 0:
+        count += 1
+        print(count)
+
     pygame.display.flip()
